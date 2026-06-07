@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -6,9 +8,14 @@ from pydantic import BaseModel
 from app.database import engine, get_db, Base
 from app.models import Student
 
-Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="DevOps Student API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(title="DevOps Student API", version="1.0.0", lifespan=lifespan)
 
 
 class StudentCreate(BaseModel):
@@ -29,7 +36,7 @@ class StudentResponse(BaseModel):
 
 @app.get("/health")
 def health_check(db: Session = Depends(get_db)):
-    """Health check"""
+    """Health check — verifies DB connection is alive."""
     try:
         db.execute(text("SELECT 1"))
         db_status = "connected"
