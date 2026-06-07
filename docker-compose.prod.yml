@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   web:
-    build: .
+    image: abdullahsz1/2312102-devops:latest
     ports:
       - "8000:8000"
     environment:
